@@ -1,0 +1,235 @@
+# Kleines Lobbysystem
+# Du kannst selbst gerne noch Sachen hinzufügen :)
+# Fehler gefunden schreibe mir auf Discord -> lukasbeppi#4814
+
+options:
+	prefix: &7DeinServer &8» &7
+	nopermission: &7DeinServer &8» &cKeine Rechte
+	itemname1: &cNavigator
+	itemname2: &cPlayerHider
+	itemslot1: 1 
+	itemslot2: 7
+	item1: compass
+	item2: clock
+	compassname: &cNavigator
+	playerhidername: &cPlayerHider
+	playerhideritem1: 351:10
+	playerhideritem2: 351:1
+	compassitem1: &oSpawn
+	compassitem2: &oBeiSpielModus2
+	compassitem3: &oBeiSpielModus3
+	compassitem4: &oBeiSpielModus4
+	compassitem2name: BeiSpielModus2
+	compassitem3name: BeiSpielModus3
+	compassitem4name: BeiSpielModus4
+	spielmoduslot1: 1
+	spielmoduslot2: 3
+	spielmoduslot3: 5
+	spielmoduslot4: 7
+	spielmodusitem1: 120
+	spielmodusitem2: 166
+	spielmodusitem3: 166
+	spielmodusitem4: 166
+
+on join:
+	teleport player to {lobbyspawn}
+	set {build::%player%} to false
+	wait 5 ticks
+	clear player's inventory
+	set slot {@itemslot1} of player to {@item1} named "{@itemname1}"
+	set slot {@itemslot2} of player to {@item2} named "{@itemname1}"
+	set gamemode of player to adventure
+
+on rightclick with {@item2}:
+		open virtual chest inventory with size 1 named "{@playerhidername}" to player
+		wait 1 tick
+		make a gui slot 2 of player with {@playerhideritem1} named "&aAlle Spieler anzeigen" to run:
+				clear {sv::%player%}
+				reveal all players in player's world from player
+				message "{@prefix}Du siehst nun &aalle &7Spieler&8."
+				close player's inventory
+		make a gui slot 6 of player with {@playerhideritem2} named "&cKeine Spieler anzeigen" to run:
+				set {sv::%player%} to 1
+				hide all players in player's world from player
+				message "{@prefix}Du hast nun alle Spieler &cversteckt&8."
+				close player's inventory
+
+
+on rightclick with {@item1}:
+		open virtual chest inventory with size 1 named "{@compassname}" to player
+		wait 1 tick
+		make a gui slot {@spielmoduslot1} of player with {@spielmodusitem1} named "{@compassitem1}" to run:
+				teleport player to {lobbyspawn}
+				wait 2 ticks
+				send "{@prefix}Du wurdest zum &cSpawn&7 teleportiert"
+		make a gui slot {@spielmoduslot2} of player with {@spielmodusitem2} named "{@compassitem2}" to run:
+				teleport player to {spielmodus1}
+				wait 2 ticks
+				send "{@prefix}Du wurdest zu &c{@compassitem2}&7 teleportiert"
+		make a gui slot {@spielmoduslot3} of player with {@spielmodusitem3} named "{@compassitem3}" to run:
+				teleport player to {spielmodus2}
+				wait 2 ticks
+				send "{@prefix}Du wurdest zu &c{@compassitem3}&7 teleportiert"
+		make a gui slot {@spielmoduslot4} of player with {@spielmodusitem4} named "{@compassitem4}" to run:
+				teleport player to {spielmodus3}
+				wait 2 ticks
+				send "{@prefix}Du wurdest zu &c{@compassitem4}&7 teleportiert"
+
+
+
+
+
+
+
+
+command /setspiel [<text>]:
+	permission: lobby.setspiel
+	permission message: {@nopermission}
+	trigger:
+		if arg-1 is "{@compassitem2name}":
+			set {spielmodus1} to player's location
+			send "{@prefix}Der Spawn für &c{@compassitem2}&7 wurde gesetzt."
+		if arg-1 is "{@compassitem3name}":
+			set {spielmodus2} to player's location
+			send "{@prefix}Der Spawn für &c{@compassitem3}&7 wurde gesetzt."
+		if arg-1 is "{@compassitem4name}":
+			set {spielmodus3} to player's location
+			send "{@prefix}Der Spawn für &c{@compassitem4}&7 wurde gesetzt."
+		if arg-1 is not set:
+			send "{@prefix}Bitte benutze: &c/setspiel &7<&cSpiel&7>"
+				
+
+
+# Events #
+
+on quit:
+	set leave message to ""
+
+
+
+on quit:
+	clear player's inventory
+
+on join:
+	set join message to ""
+
+on place:
+	if {build::%player%} is true:
+		stop
+		
+	else:
+		cancel event		
+on break:
+	if {build::%player%} is true:
+		stop
+		
+	else:
+		cancel event
+on inventory click:
+	if {build::%player%} is true:
+		stop
+	else:
+		cancel event
+on drop:
+	if {build::%player%} is true:
+		stop
+		
+	else:
+		cancel event
+
+on weather change to rain or thunder:
+	cancel event	
+
+on damage:
+	cancel event
+
+On Hunger Meter Change:
+	set hunger to 20
+
+
+on consume:
+	cancel event
+	
+on pick up:
+	if {build::%player%} is true:
+		stop
+	else:
+		cancel event
+		
+on explode:
+	cancel event
+
+
+	
+on damage:
+	cancel event
+
+at 18:00:
+	set time to 7:00
+	
+On Hunger Meter Change:
+	set hunger to 20
+
+		
+on consume:
+	cancel event
+
+		
+on explode:
+	cancel event
+
+on quit:
+	set leave message to ""
+
+
+on join:
+	set join message to ""
+
+#Commands
+		
+command /setlobbyspawn:
+	permission: lobby.setspawn
+	permission message: {@nopermission}
+	trigger:
+		set {lobbyspawn} to player's location
+		send "{@prefix}Du hast den &cLobbySpawn &7gesetzt!"
+		
+command /reloadlobbysys:
+	permission: lobby.reloadlobbysys
+	permission message: {@nopermission}
+	trigger:
+		execute console command "/skript reload Lobby"
+		wait 1 second
+		send "{@prefix}Das &cLobbySystem &7wurde &cerfolgreich &7neu geladen."
+
+
+command /spawn:
+	trigger:
+		if {lobbyspawn} is not set:
+			send "{@prefix}Der &cLobbySpawn &7wurde noch nicht gesetzt!"
+			stop
+		else:
+			teleport player to {lobbyspawn}
+			send "{@prefix}Du wurdest zum &cLobbySpawn &7teleportiert."
+
+
+command /build:
+	permission: lobby.build
+	trigger:
+		if {build::%player%} is false:
+			set {build::%player%} to true
+			send "{@prefix} Buildmode &caktiviert&7." to player
+			clear player's inventory
+			set gamemode of player to creative
+			stop
+		
+		if {build::%player%} is true:
+			set {build::%player%} to false
+			send "{@prefix} Buildmode &cdeaktiviert&7." to player
+			set gamemode of player to adventure
+			wait 1 ticks
+			clear player's inventory
+			set slot {@itemslot1} of player to {@item1} named "{@itemname1}"
+			set slot {@itemslot2} of player to {@item2} named "{@itemname1}"
+			wait 5 ticks
+			stop
